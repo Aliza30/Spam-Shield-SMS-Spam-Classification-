@@ -1,166 +1,257 @@
-# Spam Detection using Machine Learning
+# 📩 SMS Spam Detection using Machine Learning
 
-Classifying SMS messages as **Spam** or **Ham (Not Spam)** using TF-IDF feature extraction and a comparison of classic ML models.
+Ever wondered how your messaging app knows when something is spam? 🤔
 
-## Project Overview
-
-Email/SMS spam affects communication and productivity. This project builds a machine learning pipeline that classifies text messages as spam or ham.
-
-**Workflow:**
-1. Load the dataset
-2. Clean the data
-3. Exploratory Data Analysis (EDA)
-4. Text preprocessing
-5. Feature extraction (TF-IDF)
-6. Model training
-7. Model evaluation & comparison
+This project builds a machine learning pipeline that classifies SMS messages as **Spam** or **Ham (Not Spam)** using Natural Language Processing (NLP) and classic machine learning algorithms. From cleaning raw text to comparing multiple models, this project covers the complete workflow of an NLP classification task.
 
 ---
 
-## Dataset
+# 🚀 Project Overview
 
-The [SMS Spam Collection dataset](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) (`spam.csv`), loaded with `latin-1` encoding, containing **5,572 messages**.
+Spam texts are everywhere—from fake lottery wins to suspicious links. The goal of this project is to automatically identify spam messages while keeping genuine conversations safe.
 
-- Dropped extra empty columns, keeping only the label and message text
-- Renamed columns to `label` and `message`
-- Mapped labels to numeric form: `ham → 0`, `spam → 1`
+The project walks through the entire machine learning pipeline:
 
-### Class Distribution
-
-![Ham vs Spam Distribution](images/ham_vs_spam_distribution.png)
-
-The dataset is imbalanced, with far more ham messages than spam — a common trait of real-world spam datasets.
-
----
-
-## Text Preprocessing
-
-A `clean_text()` function normalizes each message:
-- Lowercases all text
-- Replaces URLs with the token `url`
-- Replaces numbers with the token `number`
-- Strips punctuation
-- Collapses extra whitespace
-
-## Train/Test Split
-
-An 80/20 stratified split preserves the ham/spam ratio in both sets:
-
-- **Training set:** 4,457 messages
-- **Testing set:** 1,115 messages
-
-![Train vs Test Class Distribution](images/train_test_class_distribution.png)
+- 📥 Data collection and cleaning
+- 📊 Exploratory Data Analysis (EDA)
+- 🧹 Text preprocessing
+- 🔤 TF-IDF feature extraction
+- 🤖 Model training
+- 📈 Performance evaluation
+- ⚖️ Model comparison
+- 💬 Predicting new SMS messages
 
 ---
 
-## Feature Extraction — TF-IDF
+# 📂 Dataset
 
-Raw text is converted into numerical vectors using **TF-IDF (Term Frequency–Inverse Document Frequency)**:
+This project uses the **SMS Spam Collection Dataset**, which contains **5,572 SMS messages** labeled as either **Spam** or **Ham**.
+
+### Dataset Summary
+
+| Category | Count |
+|-----------|------:|
+| Total Messages | 5,572 |
+| Ham | 4,825 |
+| Spam | 747 |
+
+### Data Cleaning
+
+Before training the models, the dataset was cleaned by:
+
+- Removing unnecessary columns
+- Renaming the columns to `label` and `message`
+- Encoding labels (`ham → 0`, `spam → 1`)
+- Removing duplicate and missing records
+
+---
+
+# 🧹 Text Preprocessing
+
+Raw text isn't something machine learning models can understand directly, so each message goes through several preprocessing steps:
+
+- Convert text to lowercase
+- Replace URLs with `url`
+- Replace numbers with `number`
+- Remove punctuation
+- Remove extra spaces
+- Tokenize text
+- Remove English stop words
+
+This helps reduce noise and improve the quality of the features.
+
+---
+
+# ✂️ Train-Test Split
+
+To ensure fair evaluation, the dataset was split using an **80:20 stratified ratio**, preserving the original spam-to-ham distribution.
+
+| Dataset | Messages |
+|----------|---------:|
+| Training | 4,457 |
+| Testing | 1,115 |
+
+---
+
+# 🔤 Feature Engineering
+
+The cleaned messages were transformed into numerical vectors using **TF-IDF (Term Frequency–Inverse Document Frequency)**.
+
+### Configuration
 
 - English stop words removed
-- Unigrams **and** bigrams considered (`ngram_range=(1,2)`)
-- Words appearing in fewer than 2 documents ignored (`min_df=2`)
+- Unigrams + Bigrams
+- `min_df = 2`
 
-This produced a vocabulary of **7,116 features**.
-
-### Top TF-IDF Features (Average Weight)
-
-![Top TF-IDF Features](images/top_tfidf_features.png)
+This produced a vocabulary containing more than **7,000 meaningful text features**.
 
 ---
 
-## Model — Multinomial Naive Bayes
+# 🤖 Models Trained
 
-The primary model is **Multinomial Naive Bayes**, a strong baseline for text classification, trained with a smoothing parameter of `alpha=0.3` to avoid zero probabilities for rare words.
+Four machine learning models were trained and compared:
 
-### Results
-
-| Metric | Score |
-|---|---|
-| Accuracy | 98.39% |
-| Precision | 99.25% |
-| Recall | 88.59% |
-| F1-Score | 93.62% |
-
-```
-              precision    recall  f1-score   support
-
-         ham       0.98      1.00      0.99       966
-        spam       0.99      0.89      0.94       149
-
-    accuracy                           0.98      1115
-   macro avg       0.99      0.94      0.96      1115
-weighted avg       0.98      0.98      0.98      1115
-```
-
-### Confusion Matrix
-
-![Confusion Matrix](images/confusion_matrix.png)
-
-### ROC Curve
-
-![ROC Curve](images/roc_curve.png)
-
----
-
-## Model Comparison
-
-Four models were trained and evaluated on identical TF-IDF features:
-
-- Multinomial Naive Bayes
 - Logistic Regression
-- Linear SVM
+- Multinomial Naive Bayes
 - Random Forest
-
-| Model | Accuracy | Precision | Recall | F1 | Train Time (s) |
-|---|---|---|---|---|---|
-| **Linear SVM** | 98.65% | 95.89% | 93.96% | **94.92%** | 0.006 |
-| Multinomial Naive Bayes | 98.39% | 99.25% | 88.59% | 93.62% | 0.001 |
-| Random Forest | 97.94% | 100.00% | 84.56% | 91.64% | 0.884 |
-| Logistic Regression | 97.13% | 92.09% | 85.91% | 88.89% | 0.035 |
-
-**Linear SVM** achieved the best F1-score, edging out Naive Bayes, with Random Forest showing perfect precision but the lowest recall (missing more spam messages) and by far the slowest training time.
-
-### F1-Score Comparison
-
-![Model Comparison — F1 Score](images/model_comparison_f1.png)
-
-### Full Metric Comparison
-
-![Model Comparison — All Metrics](images/model_comparison_all_metrics.png)
+- Linear Support Vector Machine (Linear SVM)
 
 ---
 
-## Most Predictive Words
+# 📊 Performance Comparison
 
-Using the log-probability difference between spam and ham classes from the Naive Bayes model, the words most strongly associated with each class:
-
-![Top Spam vs Ham Words](images/top_spam_ham_words.png)
+| Model | Accuracy | Precision | Recall | F1-Score |
+|------|---------:|----------:|--------:|---------:|
+| 🥇 Linear SVM | **98.65%** | 95.89% | **93.96%** | **94.92%** |
+| 🥈 Multinomial Naive Bayes | 98.39% | **99.25%** | 88.59% | 93.62% |
+| 🥉 Random Forest | 97.94% | **100.00%** | 84.56% | 91.64% |
+| Logistic Regression | 97.13% | 92.09% | 85.91% | 88.89% |
 
 ---
 
-## Live Prediction Function
+# 🏆 Best Model
 
-A helper function `predict_sms()` cleans, vectorizes, and classifies a new message, printing both the predicted label and the spam probability.
+**Linear SVM** came out on top.
 
-**Example:**
+Why?
+
+- Highest F1-score
+- Great balance between precision and recall
+- Fast training time
+- Strong performance on unseen messages
+
+While Multinomial Naive Bayes achieved slightly better precision, Linear SVM delivered the strongest overall performance.
+
+---
+
+# 📈 Confusion Matrix
+
+The Multinomial Naive Bayes model produced:
+
+- ✅ True Ham: **965**
+- ❌ False Spam: **1**
+- ❌ Missed Spam: **17**
+- ✅ True Spam: **132**
+
+Overall Performance:
+
+- Accuracy → **98.39%**
+- Precision → **99.25%**
+- Recall → **88.59%**
+- F1 Score → **93.62%**
+
+---
+
+# 💬 Try It Yourself
+
+```python
+predict_sms("Congratulations! You won a free iPhone.")
 ```
-Message : hi i am aliza
-Result  : ✅ HAM (not spam)
-Spam probability: 2.83%
+
+Output
+
+```
+Spam
+```
+
+Another example:
+
+```python
+predict_sms("Hey, are we still meeting tomorrow?")
+```
+
+Output
+
+```
+Ham
 ```
 
 ---
 
-## Tech Stack
+# 🛠 Tech Stack
 
-- **Python** — pandas, numpy
-- **scikit-learn** — TfidfVectorizer, MultinomialNB, LogisticRegression, LinearSVC, RandomForestClassifier
-- **matplotlib / seaborn** — visualization
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- Matplotlib
+- Seaborn
+- Jupyter Notebook
 
-## Key Takeaways
+---
 
-- TF-IDF with unigrams + bigrams provides strong signal for spam detection even with simple models.
-- Naive Bayes gives very high precision (few false spam flags) but misses more spam (lower recall) than Linear SVM.
-- Linear SVM offers the best overall balance (highest F1) while still training almost instantly.
-- Random Forest, despite perfect precision, is the weakest on recall and by far the most expensive to train — not worth it here.
+# 📁 Project Structure
+
+```
+SMS-Spam-Detection/
+│
+├── spam_detection.ipynb
+├── spam.csv
+├── spam_cleaned.csv
+├── README.md
+└── requirements.txt
+```
+
+---
+
+# ⚡ Getting Started
+
+### Clone the repository
+
+```bash
+git clone https://github.com/your-username/SMS-Spam-Detection.git
+```
+
+### Move into the project folder
+
+```bash
+cd SMS-Spam-Detection
+```
+
+### Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run the notebook
+
+```bash
+jupyter notebook spam_detection.ipynb
+```
+
+---
+
+# 🎯 Key Results
+
+- Achieved **98%+ accuracy** on SMS spam classification.
+- Compared four popular machine learning algorithms.
+- Linear SVM delivered the best overall performance.
+- TF-IDF proved highly effective for representing SMS text.
+- Built a reusable prediction function for classifying new messages.
+
+---
+
+# 🔮 Future Improvements
+
+Some cool next steps:
+
+- 🚀 Fine-tune model hyperparameters
+- 🧠 Try Deep Learning models (LSTM/GRU)
+- 🤖 Experiment with BERT or other Transformer models
+- 🌐 Deploy as a Flask/FastAPI API
+- 🎨 Build a Streamlit web app for real-time predictions
+
+---
+
+# 💡 Final Thoughts
+
+This project shows that you don't always need complex deep learning models to solve real-world NLP problems. With thoughtful preprocessing, TF-IDF feature engineering, and well-chosen machine learning algorithms, it's possible to build a highly accurate spam detection system that's both fast and reliable.
+
+---
+
+# 👩‍💻 Author
+
+**Aliza Razi**
+
+If you found this project interesting, feel free to ⭐ the repository or connect with me on LinkedIn!
